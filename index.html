@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist NHO 11 - Completo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF e AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .bg-red-alert { background-color: #fee2e2 !important; border-color: #ef4444 !important; }
+        .bg-green-ok { background-color: #d1fae5 !important; border-color: #10b981 !important; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased p-4 sm:p-6">
+
+    <div class="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl border border-gray-100 p-6 sm:p-8 space-y-8">
+        
+        <!-- Cabeçalho -->
+        <div class="text-center border-b pb-4">
+            <h1 class="text-2xl sm:text-3xl font-bold text-blue-900"> Avaliação dos Níveis de Iluminamento em Ambientes internos de Trabalho NHO 11</h1>
+            <p class="text-sm text-gray-500 mt-1">Marcelo Picanço - Contato 48 9 9969 6483 <img src="qrmarcelo.jpg" alt="qrmarcelo.jpg" width="60" height="60">
+</p>
+        </div>
+
+        <!-- Orientações Técnicas (Anexo I, NHO 11) -->
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-lg text-sm text-blue-900 shadow-sm space-y-1">
+            <p class="font-bold flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Orientação Oficial (Anexo I, NHO 11):
+            </p>
+            <p class="pl-7">Ao realizar a medição, utilizar uma trena, medir do nível do solo até altura de 0,75 m. Se Lux < que valor de referência informado, sinalizar na cor vermelha.</p>
+        </div>
+
+        <!-- Dados Gerais -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">Empresa:</label>
+                <input type="text" id="empresa" class="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">Data:</label>
+                <input type="date" id="data_medicao" class="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">Modelo do Luxímetro:</label>
+                <input type="text" id="modelo_luximetro" class="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500" placeholder="Ex: Instrutherm LD-209">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">Ano de Calibração:</label>
+                <input type="number" id="ano_calibracao" class="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500" placeholder="Ex: 2025">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">Horário de Início:</label>
+                <input type="time" id="horario_inicio" class="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">Responsável pela Medição:</label>
+                <input type="text" id="responsavel" class="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500" placeholder="Nome do técnico">
+            </div>
+        </div>
+
+        <!-- Container Dinâmico de Setores/Itens -->
+        <div id="categorias-container" class="space-y-6">
+            <!-- Gerado via JavaScript -->
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="pt-6 border-t flex flex-wrap gap-4">
+            <button type="button" onclick="salvarHistorico()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow transition text-center">Salvar Histórico na Página</button>
+            <button type="button" onclick="exportarPDF()" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow transition text-center">Extrair em PDF</button>
+        </div>
+
+        <!-- Histórico na Página -->
+        <div class="mt-12 border-t pt-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Histórico de Relatórios Salvos</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 border">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Responsável</th>
+                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historicoTabela" class="bg-white divide-y divide-gray-200 text-sm">
+                        <tr><td colspan="4" class="px-4 py-3 text-center text-gray-400">Nenhum relatório salvo.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Principal -->
+    <script>
+        // Base de Dados de Setores e Critérios NHO 11
+        const dadosNHO11 = [
+            {
+                categoria: "1. Áreas gerais da edificação",
+                itens: [
+                    { nome: "Saguão de entrada", min: 100 },
+                    { nome: "Sala de espera", min: 200 },
+                    { nome: "Área de circulação e corredor", min: 100 },
+                    { nome: "Escada, escada rolante e esteira rolante", min: 150 },
+                    { nome: "Rampa de carregamento", min: 150 },
+                    { nome: "Refeitório e cantina", min: 200 },
+                    { nome: "Sala de descanso", min: 100 },
+                    { nome: "Sala para exercícios físicos", min: 300 },
+                    { nome: "Vestiário, banheiro e toalete", min: 200 },
+                    { nome: "Enfermaria", min: 500 },
+                    { nome: "Sala para atendimento médico", min: 500 },
+                    { nome: "Estufa e sala dos disjuntores", min: 200 },
+                    { nome: "Correios e quadro de distribuição", min: 500 },
+                    { nome: "Depósito, estoque e câmara fria", min: 100 },
+                    { nome: "Expedição", min: 300 },
+                    { nome: "Estação de controle", min: 150 }
+                ]
+            },
+            {
+                categoria: "2. Edificações na agricultura",
+                itens: [
+                    { nome: "Carregamento e operação de mercadorias, equipamentos de manuseio e máquinas", min: 200 },
+                    { nome: "Estábulo", min: 50 },
+                    { nome: "Cercado para animais doentes e baia para parto de animais", min: 200 },
+                    { nome: "Preparação de alimentos, leiteira e lavagem de utensílios", min: 200 }
+                ]
+            },
+            {
+                categoria: "3. Padarias",
+                itens: [
+                    { nome: "Preparação e fornada", min: 300 },
+                    { nome: "Acabamento e decoração", min: 500 }
+                ]
+            },
+            {
+                categoria: "4. Cimento, concreto e indústria de tijolos",
+                itens: [
+                    { nome: "Secagem", min: 50 },
+                    { nome: "Preparação dos materiais, trabalhos nos fornos e misturadores", min: 200 },
+                    { nome: "Trabalhos em máquinas em geral", min: 300 },
+                    { nome: "Formas brutas", min: 300 }
+                ]
+            },
+            {
+                categoria: "5. Indústrias de cerâmica e vidro",
+                itens: [
+                    { nome: "Secagem", min: 50 },
+                    { nome: "Preparação e trabalho em máquinas em geral", min: 300 },
+                    { nome: "Esmaltagem, laminação, compressão, moldagem de peças simples, vitrificação e sopragem do vidro", min: 300 },
+                    { nome: "Polimento, moagem, gravação, polimento do vidro, moldagem de peças de precisão e fabricação de instrumentos de vidro", min: 750 },
+                    { nome: "Trabalho decorativo", min: 500 },
+                    { nome: "Polimento de vidro ótico, polimento manual e gravação de cristais e trabalho em mercadorias comuns", min: 750 },
+                    { nome: "Trabalho de precisão (por exemplo, polimento decorativo e pintura à mão)", min: 1000 },
+                    { nome: "Fabricação de pedras preciosas sintéticas", min: 1500 }
+                ]
+            },
+            {
+                categoria: "6. Indústrias de borracha, plástica e química",
+                itens: [
+                    { nome: "Instalação de processamento operada remotamente", min: 50 },
+                    { nome: "Instalação de processamento com intervenção manual limitada", min: 150 },
+                    { nome: "Instalação de processamento com trabalho manual constante", min: 300 },
+                    { nome: "Metrologias e laboratórios", min: 500 },
+                    { nome: "Produção farmacêutica", min: 500 },
+                    { nome: "Produção de pneus", min: 500 },
+                    { nome: "Inspeção de cor", min: 1000 },
+                    { nome: "Corte, acabamento e inspeção", min: 750 }
+                ]
+            },
+            {
+                categoria: "7. Indústrias de elétrica",
+                itens: [
+                    { nome: "Fabricação de cabos e fios", min: 300 },
+                    { nome: "Bobinagem: bruta (grandes transformadores)", min: 300 },
+                    { nome: "Bobinagem: média (quadros de distribuição)", min: 500 },
+                    { nome: "Bobinagem: fina (telefone)", min: 750 },
+                    { nome: "Bobinagem: de precisão (equipamentos de medição)", min: 1000 },
+                    { nome: "Oficina eletrônica, ensaio e ajuste", min: 1500 }
+                ]
+            },
+            {
+                categoria: "8. Indústrias de alimentos",
+                itens: [
+                    { nome: "Locais de trabalho em cervejarias, maltagem, lavagem, enchimento, limpeza, conservas, açúcar, tabaco", min: 200 },
+                    { nome: "Triagem e lavagem de produtos, moagem, mistura e embalagem", min: 300 },
+                    { nome: "Abatedouros, açougues, leiteiras, filtragem e refinarias de açúcar", min: 500 },
+                    { nome: "Corte e triagem de frutas e vegetais", min: 300 },
+                    { nome: "Fabricação de alimentos finos e cozinha", min: 500 },
+                    { nome: "Fabricação de charutos e cigarros", min: 500 },
+                    { nome: "Inspeção de vidros, garrafas e controle de produtos", min: 500 },
+                    { nome: "Laboratórios", min: 500 },
+                    { nome: "Inspeção de cor", min: 1000 }
+                ]
+            },
+            {
+                categoria: "9. Fundições e plantas de fundição de metal",
+                itens: [
+                    { nome: "Túnel sob o piso, porão etc.", min: 50 },
+                    { nome: "Plataforma", min: 100 },
+                    { nome: "Preparação da areia", min: 200 },
+                    { nome: "Vestiário", min: 200 },
+                    { nome: "Trabalho nos cadinhos e misturadores", min: 200 },
+                    { nome: "Baia da fundição", min: 200 },
+                    { nome: "Área dos vibradores", min: 200 },
+                    { nome: "Máquina de moldagem", min: 200 },
+                    { nome: "Moldagem central e auxiliar", min: 300 },
+                    { nome: "Fundição", min: 300 },
+                    { nome: "Construção de modelos", min: 500 }
+                ]
+            },
+            {
+                categoria: "11. Fabricação de joias",
+                itens: [
+                    { nome: "Trabalho com pedras preciosas", min: 1500 },
+                    { nome: "Fabricação de joias", min: 1000 },
+                    { nome: "Relojoaria (manual)", min: 1500 },
+                    { nome: "Relojoaria (automática)", min: 500 }
+                ]
+            },
+            {
+                categoria: "12. Lavanderias e limpeza a seco",
+                itens: [
+                    { nome: "Entrada de mercadorias, marcação e distribuição", min: 300 },
+                    { nome: "Lavagem e limpeza a seco", min: 300 },
+                    { nome: "Área para passar roupas", min: 300 },
+                    { nome: "Inspeção e reparos", min: 750 }
+                ]
+            },
+            {
+                categoria: "13. Indústrias de couro",
+                itens: [
+                    { nome: "Trabalho em cubas, barris e tanques", min: 200 },
+                    { nome: "Descarnar, aparar, esfregar e tombar peles", min: 300 },
+                    { nome: "Trabalho em selas, sapatos, costura, polimento, modelagem, corte e puncionamento", min: 500 },
+                    { nome: "Triagem", min: 500 },
+                    { nome: "Tingimento de couro (máquina)", min: 500 },
+                    { nome: "Controle de qualidade e inspeção de cor", min: 1000 },
+                    { nome: "Fabricação de sapatos e luvas", min: 500 }
+                ]
+            },
+            {
+                categoria: "14. Trabalho e processamento em metal",
+                itens: [
+                    { nome: "Forjamento de molde aberto", min: 200 },
+                    { nome: "Forjamento por derramamento, soldagem e moldagem a frio", min: 300 },
+                    { nome: "Usinagem grosseira e média (Tolerâncias > 0,1 mm)", min: 300 },
+                    { nome: "Usinagem de precisão: retificação", min: 500 },
+                    { nome: "Gravação: inspeção", min: 750 },
+                    { nome: "Desenho de formas de fio e tubo", min: 300 },
+                    { nome: "Usinagem de placa ≥ 5 mm", min: 200 },
+                    { nome: "Trabalho em folha de metal < 5 mm", min: 300 },
+                    { nome: "Ferramentaria e fabricação de equipamentos de corte", min: 750 },
+                    { nome: "Montagem: bruta", min: 200 },
+                    { nome: "Montagem: média", min: 300 },
+                    { nome: "Montagem: fina", min: 500 },
+                    { nome: "Montagem: de precisão", min: 750 },
+                    { nome: "Galvanoplastia", min: 300 },
+                    { nome: "Pintura e preparação de superfícies", min: 750 },
+                    { nome: "Confecção de ferramentas, modelo, mecânica de precisão e micromecânica", min: 1000 }
+                ]
+            },
+            {
+                categoria: "15. Indústrias de papel",
+                itens: [
+                    { nome: "Processamento de madeira ou fibra e moagem", min: 200 },
+                    { nome: "Processo e fabricação de papel, papel canelado e papelão", min: 300 },
+                    { nome: "Trabalho de encadernação de livros padrões", min: 500 }
+                ]
+            },
+            {
+                categoria: "16. Subestações",
+                itens: [
+                    { nome: "Instalação de abastecimento de combustíveis", min: 50 },
+                    { nome: "Casa da caldeira", min: 100 },
+                    { nome: "Sala de máquinas", min: 200 },
+                    { nome: "Sala auxiliar (bombas, capacitores, chaves)", min: 200 },
+                    { nome: "Sala de controle", min: 500 }
+                ]
+            },
+            {
+                categoria: "17. Gráficas",
+                itens: [
+                    { nome: "Corte, douração, gravação em relevo, impressoras e matriciais", min: 500 },
+                    { nome: "Triagem de papel e impressão manual", min: 500 },
+                    { nome: "Configuração de tipo, retoque e litografia", min: 1000 },
+                    { nome: "Inspeção de cor em impressão multicolorida", min: 1500 },
+                    { nome: "Gravação em aço e cobre", min: 2000 }
+                ]
+            },
+            {
+                categoria: "18. Trabalhos em ferro e aço",
+                itens: [
+                    { nome: "Instalação de produção sem intervenção manual", min: 50 },
+                    { nome: "Instalação com operação manual ocasional", min: 150 },
+                    { nome: "Instalação com operação manual contínua", min: 200 },
+                    { nome: "Depósito de chapas", min: 50 },
+                    { nome: "Forno", min: 200 },
+                    { nome: "Usinagem, bobinadeira e linha de corte", min: 300 },
+                    { nome: "Plataforma e painéis de controle", min: 300 },
+                    { nome: "Ensaio, medição e inspeção", min: 500 }
+                ]
+            },
+            {
+                categoria: "19. Indústria têxtil",
+                itens: [
+                    { nome: "Banho e abertura de fardos", min: 200 },
+                    { nome: "Cardar, lavar, passar, extrair, pentear, fiação de linho", min: 300 },
+                    { nome: "Fiação, bobinar, urdir, tecer, trançar", min: 500 },
+                    { nome: "Costurar, trabalho fino em malha", min: 750 },
+                    { nome: "Projeto manual e desenho de padrões", min: 750 },
+                    { nome: "Acabamento, tingimento e estampagem automática", min: 500 },
+                    { nome: "Sala de secagem", min: 100 },
+                    { nome: "Extrair, selecionar e aparar", min: 1000 },
+                    { nome: "Inspeção de cor e controle do tecido", min: 1000 },
+                    { nome: "Reparo invisível", min: 1500 },
+                    { nome: "Fabricação de chapéu", min: 500 }
+                ]
+            },
+            {
+                categoria: "20. Construção de veículos",
+                itens: [
+                    { nome: "Trabalho no chassi e na montagem", min: 500 },
+                    { nome: "Pintura, câmara de pulverização e polimento", min: 750 },
+                    { nome: "Pintura: retoque e inspeção", min: 1000 },
+                    { nome: "Fabricação de estofamento", min: 1000 },
+                    { nome: "Inspeção final", min: 1000 }
+                ]
+            },
+            {
+                categoria: "21. Marcenaria e indústrias de móveis",
+                itens: [
+                    { nome: "Processo automático (ex: secagem)", min: 50 },
+                    { nome: "Sistema de serras", min: 300 },
+                    { nome: "Trabalho de marceneiro em bancos, colagem e montagem", min: 300 },
+                    { nome: "Polimento, pintura e acabamento", min: 750 },
+                    { nome: "Trabalho em máquinas de marcenaria", min: 500 },
+                    { nome: "Seleção de madeira folheada e marchetaria", min: 750 },
+                    { nome: "Controle de qualidade", min: 1000 }
+                ]
+            },
+            {
+                categoria: "22. Escritórios",
+                itens: [
+                    { nome: "Arquivamento, cópia, circulação", min: 300 },
+                    { nome: "Escrever, teclar, ler e processar dados", min: 500 },
+                    { nome: "Desenho técnico", min: 750 },
+                    { nome: "Estação de projeto assistido por computador", min: 500 },
+                    { nome: "Sala de reunião e conferência", min: 500 },
+                    { nome: "Recepção", min: 300 },
+                    { nome: "Arquivo", min: 200 }
+                ]
+            },
+            {
+                categoria: "23. Varejo",
+                itens: [
+                    { nome: "Área de vendas pequena", min: 300 },
+                    { nome: "Área de vendas grande", min: 500 },
+                    { nome: "Área da caixa registradora e empacotador", min: 500 }
+                ]
+            },
+            {
+                categoria: "24. Restaurantes e hotéis",
+                itens: [
+                    { nome: "Recepção, caixa e portaria", min: 300 },
+                    { nome: "Cozinha", min: 500 },
+                    { nome: "Restaurante, sala de jantar e eventos", min: 200 },
+                    { nome: "Bufê", min: 300 },
+                    { nome: "Sala de conferência", min: 500 },
+                    { nome: "Corredor", min: 100 }
+                ]
+            },
+            {
+                categoria: "25. Locais de entretenimento",
+                itens: [
+                    { nome: "Sala multiuso, ensaio e camarim", min: 300 },
+                    { nome: "Museu (em geral)", min: 300 }
+                ]
+            },
+            {
+                categoria: "26. Bibliotecas",
+                itens: [
+                    { nome: "Estante", min: 200 },
+                    { nome: "Área de leitura", min: 500 }
+                ]
+            },
+            {
+                categoria: "27. Estacionamentos públicos (internos)",
+                itens: [
+                    { nome: "Rampa de entrada e saída (dia)", min: 300 },
+                    { nome: "Rampa de entrada e saída (noite) / Pista / Estacionamento", min: 75 },
+                    { nome: "Guichê", min: 300 }
+                ]
+            },
+            {
+                categoria: "28. Construções educacionais",
+                itens: [
+                    { nome: "Brinquedoteca, berçário, salas de aula comuns", min: 300 },
+                    { nome: "Sala de aulas noturnas, leitura, quadro negro, demonstração", min: 500 },
+                    { nome: "Sala de arte em escolas de arte / Desenho técnico", min: 750 },
+                    { nome: "Aplicação, laboratórios e oficina de ensino", min: 500 },
+                    { nome: "Sala de esportes, ginásio e piscina", min: 300 }
+                ]
+            },
+            {
+                categoria: "29. Locais de assistência médica",
+                itens: [
+                    { nome: "Sala de espera / Corredor (dia)", min: 200 },
+                    { nome: "Corredor (noite)", min: 50 },
+                    { nome: "Escritório dos funcionários", min: 500 },
+                    { nome: "Enfermaria (exame simples / leitura)", min: 300 },
+                    { nome: "Exame e tratamento / Cirurgia", min: 1000 },
+                    { nome: "Sala de exames geral / Diálise / Gesso", min: 500 },
+                    { nome: "Sala de autópsia e necrotério", min: 500 },
+                    { nome: "Mesa de autópsia / Dentista (cavidade)", min: 5000 }
+                ]
+            },
+            {
+                categoria: "30. Aeroportos",
+                itens: [
+                    { nome: "Saguão de embarque e desembarque", min: 200 },
+                    { nome: "Balcão de informações, check-in e alfândega", min: 500 },
+                    { nome: "Torre de controle e tráfego aéreo", min: 500 },
+                    { nome: "Hangar de reparos e testes", min: 500 }
+                ]
+            },
+            {
+                categoria: "31. Locais para celebrações e cultos religiosos",
+                itens: [
+                    { nome: "Corpo do local", min: 100 },
+                    { nome: "Cadeira, altar e púlpito", min: 300 }
+                ]
+            }
+        ];
+
+        // Montar o formulário dinamicamente
+        function renderizarChecklist() {
+            const container = document.getElementById('categorias-container');
+            let html = '';
+
+            dadosNHO11.forEach((cat, catIndex) => {
+                html += `
+                    <div class="border border-gray-200 rounded-xl p-4 sm:p-6 bg-white shadow-sm space-y-4">
+                        <h2 class="text-lg font-bold text-blue-900 border-b pb-2">${cat.categoria}</h2>
+                        <div class="space-y-3">
+                `;
+
+                cat.itens.forEach((item, itemIndex) => {
+                    const id = `item_${catIndex}_${itemIndex}`;
+                    html += `
+                        <div id="card_${id}" class="p-3 rounded-lg border border-gray-200 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-50/50">
+                            <div>
+                                <span class="text-sm font-medium text-gray-900">${item.nome}</span>
+                                <p class="text-xs text-gray-500">Mínimo exigido: &ge; ${item.min} Lux</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="text-right">
+                                    <input type="number" id="${id}" data-min="${item.min}" oninput="avaliarItem('${id}')" class="w-28 p-2 border rounded-lg bg-white text-center font-bold focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Lux medidos">
+                                </div>
+                                <span id="status_${id}" class="text-xs font-semibold px-2 py-1 rounded bg-gray-200 text-gray-600 whitespace-nowrap">Pendente</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Validação individual em tempo real
+        function avaliarItem(id) {
+            const input = document.getElementById(id);
+            const card = document.getElementById(`card_${id}`);
+            const status = document.getElementById(`status_${id}`);
+            const min = parseFloat(input.getAttribute('data-min'));
+            const val = input.value;
+
+            if (val === '') {
+                card.className = "p-3 rounded-lg border border-gray-200 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-50/50";
+                status.className = "text-xs font-semibold px-2 py-1 rounded bg-gray-200 text-gray-600 whitespace-nowrap";
+                status.innerText = "Pendente";
+                return;
+            }
+
+            const medido = parseFloat(val);
+
+            if (medido < min) {
+                // SINALIZAÇÃO EM COR VERMELHA CONFORME SOLICITADO
+                card.className = "p-3 rounded-lg border border-red-400 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-red-alert";
+                status.className = "text-xs font-semibold px-2 py-1 rounded bg-red-200 text-red-900 whitespace-nowrap";
+                status.innerText = `⚠ Abaixo (< ${min} Lux)`;
+            } else {
+                card.className = "p-3 rounded-lg border border-emerald-300 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-green-ok";
+                status.className = "text-xs font-semibold px-2 py-1 rounded bg-emerald-200 text-emerald-900 whitespace-nowrap";
+                status.innerText = `✔ Conforme`;
+            }
+        }
+
+        // Coletar dados preenchidos
+        function coletarDados() {
+            let dadosPreenchidos = [];
+            dadosNHO11.forEach((cat, catIndex) => {
+                cat.itens.forEach((item, itemIndex) => {
+                    const id = `item_${catIndex}_${itemIndex}`;
+                    const val = document.getElementById(id).value;
+                    if (val !== '') {
+                        const medido = parseFloat(val);
+                        const status = medido < item.min ? 'ABAIXO (Inconforme)' : 'Conforme';
+                        dadosPreenchidos.push({
+                            categoria: cat.categoria,
+                            local: item.nome,
+                            min: item.min,
+                            medido: medido,
+                            status: status
+                        });
+                    }
+                });
+            });
+
+            return {
+                id: Date.now(),
+                empresa: document.getElementById('empresa').value || 'Não informada',
+                data_medicao: document.getElementById('data_medicao').value || 'Não informada',
+                modelo_luximetro: document.getElementById('modelo_luximetro').value || 'Não informado',
+                ano_calibracao: document.getElementById('ano_calibracao').value || 'Não informado',
+                horario_inicio: document.getElementById('horario_inicio').value || 'Não informado',
+                responsavel: document.getElementById('responsavel').value || 'Não informado',
+                itens: dadosPreenchidos
+            };
+        }
+
+        // Histórico Local
+        function salvarHistorico() {
+            const relatorio = coletarDados();
+            if(relatorio.empresa === 'Não informada' && relatorio.itens.length === 0) {
+                alert('Preencha ao menos a empresa e alguma medição antes de salvar.');
+                return;
+            }
+
+            let historico = JSON.parse(localStorage.getItem('nho11_historico') || '[]');
+            historico.push(relatorio);
+            localStorage.setItem('nho11_historico', JSON.stringify(historico));
+            
+            alert('Relatório salvo com sucesso no histórico da página!');
+            carregarHistorico();
+        }
+
+        function carregarHistorico() {
+            const tbody = document.getElementById('historicoTabela');
+            let historico = JSON.parse(localStorage.getItem('nho11_historico') || '[]');
+
+            if(historico.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-3 text-center text-gray-400">Nenhum relatório salvo.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            historico.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-2">${item.data_medicao}</td>
+                    <td class="px-4 py-2 font-medium">${item.empresa}</td>
+                    <td class="px-4 py-2">${item.responsavel}</td>
+                    <td class="px-4 py-2 text-center space-x-2">
+                        <button onclick="carregarItemHistorico(${index})" class="text-blue-600 hover:underline">Carregar</button>
+                        <button onclick="removerItemHistorico(${index})" class="text-red-600 hover:underline">Excluir</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function carregarItemHistorico(index) {
+            let historico = JSON.parse(localStorage.getItem('nho11_historico') || '[]');
+            const item = historico[index];
+            if(!item) return;
+
+            document.getElementById('empresa').value = item.empresa !== 'Não informada' ? item.empresa : '';
+            document.getElementById('data_medicao').value = item.data_medicao !== 'Não informada' ? item.data_medicao : '';
+            document.getElementById('modelo_luximetro').value = item.modelo_luximetro !== 'Não informado' ? item.modelo_luximetro : '';
+            document.getElementById('ano_calibracao').value = item.ano_calibracao !== 'Não informado' ? item.ano_calibracao : '';
+            document.getElementById('horario_inicio').value = item.horario_inicio !== 'Não informado' ? item.horario_inicio : '';
+            document.getElementById('responsavel').value = item.responsavel !== 'Não informado' ? item.responsavel : '';
+
+            // Limpar todos
+            dadosNHO11.forEach((cat, catIndex) => {
+                cat.itens.forEach((it, itemIndex) => {
+                    const id = `item_${catIndex}_${itemIndex}`;
+                    document.getElementById(id).value = '';
+                    avaliarItem(id);
+                });
+            });
+
+            // Preencher com os salvos
+            item.itens.forEach(salvo => {
+                dadosNHO11.forEach((cat, catIndex) => {
+                    cat.itens.forEach((it, itemIndex) => {
+                        if(cat.categoria === salvo.categoria && it.nome === salvo.local) {
+                            const id = `item_${catIndex}_${itemIndex}`;
+                            document.getElementById(id).value = salvo.medido;
+                            avaliarItem(id);
+                        }
+                    });
+                });
+            });
+
+            alert('Relatório carregado no formulário!');
+        }
+
+        function removerItemHistorico(index) {
+            let historico = JSON.parse(localStorage.getItem('nho11_historico') || '[]');
+            historico.splice(index, 1);
+            localStorage.setItem('nho11_historico', JSON.stringify(historico));
+            carregarHistorico();
+        }
+
+        // Exportação para PDF
+        function exportarPDF() {
+            const relatorio = coletarDados();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(14);
+            doc.text("Checklist NHO 11 - Relatório de Iluminamento", 14, 15);
+
+            doc.setFontSize(9);
+            doc.text(`Empresa: ${relatorio.empresa}`, 14, 22);
+            doc.text(`Data: ${relatorio.data_medicao}`, 14, 27);
+            doc.text(`Luxímetro: ${relatorio.modelo_luximetro} (Calibração: ${relatorio.ano_calibracao})`, 14, 32);
+            doc.text(`Início: ${relatorio.horario_inicio} | Responsável: ${relatorio.responsavel}`, 14, 37);
+
+            // Orientação
+            doc.setTextColor(41, 128, 185);
+            doc.text("Orientação Anexo I (Trena / Altura 0,75m): Medido do nível do solo até 0,75m.", 14, 44);
+            doc.setTextColor(0, 0, 0);
+
+            const rows = relatorio.itens.map(i => [
+                i.categoria,
+                i.local,
+                `≥ ${i.min} Lux`,
+                `${i.medido} Lux`,
+                i.status
+            ]);
+
+            doc.autoTable({
+                startY: 48,
+                head: [['Categoria', 'Local Avaliado', 'Referência', 'Medido', 'Status']],
+                body: rows.length > 0 ? rows : [['Nenhum item preenchido', '-', '-', '-', '-']],
+                theme: 'grid',
+                styles: { fontSize: 7 },
+                headStyles: { fillColor: [41, 128, 185] },
+                didParseCell: function(data) {
+                    if (data.section === 'body' && data.row.raw[4].includes('ABAIXO')) {
+                        data.cell.styles.textColor = [200, 0, 0];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+            });
+
+            doc.save(`Checklist_NHO11_${relatorio.empresa.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        // Inicialização
+        window.onload = function() {
+            renderizarChecklist();
+            carregarHistorico();
+        };
+    </script>
+</body>
+</html>
